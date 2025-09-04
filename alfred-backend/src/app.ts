@@ -1,23 +1,141 @@
 import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import cors from 'cors';
-import { json, urlencoded } from 'body-parser';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import dotenv from 'dotenv';
+import { connectDatabase } from './config/database';
+import { seedDatabase } from './utils/databaseSeeder';
+import { SocketService } from './services/socketService';
+import { 
+  errorHandler, 
+  notFoundHandler, 
+  requestLogger, 
+  securityHeaders, 
+  rateLimiter
+} from './middleware/errorHandler';
+import { projectRoutes } from './routes/projectRoutes';
+import { communicationRoutes } from './routes/communicationRoutes';
+import { actionRoutes } from './routes/actionRoutes';
+import { weatherRoutes } from './routes/weatherRoutes';
 
-import dotenv from "dotenv";
 dotenv.config();
 
-const port = process.env.PORT;
-
 const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+  }
+});
+
+// Initialize Socket.IO service
+SocketService.initialize(io);
+
+// Middleware
+app.use(helmet());
 app.use(cors());
-app.use(express.json());
+app.use(morgan('combined'));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(requestLogger);
+app.use(securityHeaders);
+app.use(rateLimiter(10000, 15 * 60 * 1000)); // 10,000 requests per 15 minutes for development
 
-app.use(json());
-app.use(urlencoded({ extended: true }));
 
-app.get("/", (_req, res) => {
-  res.send("Backend is running");
-});
+// API Routes
+app.use('/api/projects', projectRoutes);
+app.use('/api/communications', communicationRoutes);
+app.use('/api/actions', actionRoutes);
+app.use('/api/weather', weatherRoutes);
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
+// 404 handler
+app.use(notFoundHandler);
+
+// Error handling middleware (must be last)
+app.use(errorHandler);
+
+// Automatic real-time updates every 2 minutes (120,000 ms)
+const startRealTimeUpdates = () => {
+  setInterval(() => {
+    console.log('🔄 Triggering automatic real-time updates...');
+    
+    // Simulate new communication
+    SocketService.emitToAll('communication-new', {
+      id: `comm-${Date.now()}`,
+      type: 'status-update',
+      title: 'Automatic Status Update',
+      content: 'This is an automatic real-time update from the system.',
+      priority: 'normal',
+      source: 'system',
+      projectId: 'auto-update',
+      tags: ['automatic', 'system'],
+      postedAt: new Date().toISOString(),
+      isAI: false
+    });
+    
+    // Simulate weather update
+    SocketService.emitToAll('weather-update', {
+      temperature: Math.floor(Math.random() * 30) + 15,
+      windSpeed: Math.floor(Math.random() * 20) + 5,
+      condition: ['Clear', 'Partly Cloudy', 'Cloudy', 'Rain'][Math.floor(Math.random() * 4)],
+      humidity: Math.floor(Math.random() * 40) + 30,
+      pressure: 1000 + Math.floor(Math.random() * 30),
+      updatedAt: new Date().toISOString()
+    });
+    
+    // Simulate project update
+    SocketService.emitToAll('project-update', {
+      id: 'site-alpha',
+      progress: Math.floor(Math.random() * 20) + 70,
+      updatedAt: new Date().toISOString()
+    });
+    
+    // Simulate AI insight
+    SocketService.emitToAll('ai-insight', {
+      id: `insight-${Date.now()}`,
+      type: 'risk-detection',
+      message: 'Schedule conflict detected between equipment delivery and site preparation phases.',
+      priority: 'high',
+      timestamp: new Date().toISOString()
+    });
+    
+    console.log('✅ Real-time updates sent to all connected clients');
+  }, 120000); // 2 minutes
+};
+
+const PORT = process.env.PORT || 3001;
+
+// Initialize database and start server
+const startServer = async () => {
+  try {
+    // Connect to MongoDB
+    await connectDatabase();
+    
+    // Seed database with initial data
+    await seedDatabase();
+    
+    // Start server
+    server.listen(PORT, () => {
+      console.log(`🚀 Alfred Backend running on port ${PORT}`);
+      console.log(`📡 Socket.IO server ready for real-time updates`);
+      console.log(`🗄️ MongoDB database: avs`);
+      console.log(`🔒 Security headers enabled`);
+      console.log(`📊 Rate limiting: 100 requests per 15 minutes`);
+      
+      // Start automatic real-time updates
+      startRealTimeUpdates();
+      console.log('⏰ Automatic updates scheduled every 2 minutes');
+    });
+    
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
+
+export { app, io };
