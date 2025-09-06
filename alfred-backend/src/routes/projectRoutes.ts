@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { ProjectController } from '../controllers/projectController';
-import { projectValidation, validateId } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
@@ -9,22 +8,22 @@ const router = Router();
 router.get('/', asyncHandler(ProjectController.getAllProjects));
 
 // Get project by ID
-router.get('/:id', validateId(), asyncHandler(ProjectController.getProjectById));
+router.get('/:id', asyncHandler(ProjectController.getProjectById));
 
 // Create new project
-router.post('/', projectValidation.create, asyncHandler(ProjectController.createProject));
+router.post('/', asyncHandler(ProjectController.createProject));
 
 // Update project
-router.put('/:id', projectValidation.update, asyncHandler(ProjectController.updateProject));
+router.put('/:id', asyncHandler(ProjectController.updateProject));
 
 // Delete project
-router.delete('/:id', validateId(), asyncHandler(ProjectController.deleteProject));
+router.delete('/:id', asyncHandler(ProjectController.deleteProject));
 
 // Get project metrics
-router.get('/:id/metrics', validateId(), asyncHandler(ProjectController.getProjectMetrics));
+router.get('/:id/metrics', asyncHandler(ProjectController.getProjectMetrics));
 
 // Update project progress
-router.patch('/:id/progress', projectValidation.progress, asyncHandler(ProjectController.updateProjectProgress));
+router.patch('/:id/progress', asyncHandler(ProjectController.updateProjectProgress));
 
 // Get project statistics
 router.get('/stats/overview', asyncHandler(ProjectController.getProjectStatistics));
@@ -39,7 +38,7 @@ router.get('/location/search', asyncHandler(ProjectController.getProjectsByLocat
 router.get('/network/overview', asyncHandler(ProjectController.getNetworkOverview));
 
 // Get project schematic for modal
-router.get('/:id/schematic', validateId(), asyncHandler(ProjectController.getProjectSchematic));
+router.get('/:id/schematic', asyncHandler(ProjectController.getProjectSchematic));
 
 // Export network report as Excel
 router.get('/export/report', asyncHandler(ProjectController.exportNetworkReport));
