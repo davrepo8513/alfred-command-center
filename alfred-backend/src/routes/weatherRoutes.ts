@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { WeatherController } from '../controllers/weatherController';
-import { weatherValidation, validateId } from '../middleware/validation';
 import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
@@ -8,8 +7,8 @@ const router = Router();
 // Weather data routes
 router.get('/location/:location', asyncHandler(WeatherController.getWeatherByLocation));
 router.post('/multiple', asyncHandler(WeatherController.getWeatherForMultipleLocations));
-router.post('/location/:location', weatherValidation.createOrUpdate, asyncHandler(WeatherController.createOrUpdateWeather));
-router.put('/location/:location', weatherValidation.createOrUpdate, asyncHandler(WeatherController.updateWeather));
+router.post('/location/:location', asyncHandler(WeatherController.createOrUpdateWeather));
+router.put('/location/:location', asyncHandler(WeatherController.updateWeather));
 router.delete('/location/:location', asyncHandler(WeatherController.deleteWeather));
 
 // Weather forecast and simulation

@@ -16,6 +16,7 @@ const WeatherDataSchema = new Schema<IWeatherData>({
     type: String,
     required: true,
     trim: true,
+
     unique: true
   },
   temperature: {
@@ -63,7 +64,6 @@ WeatherDataSchema.virtual('id').get(function(this: any) {
 });
 
 // Index for better query performance
-WeatherDataSchema.index({ location: 1 });
 WeatherDataSchema.index({ updatedAt: -1 });
 
 export const WeatherData = mongoose.model<IWeatherData>('WeatherData', WeatherDataSchema);
