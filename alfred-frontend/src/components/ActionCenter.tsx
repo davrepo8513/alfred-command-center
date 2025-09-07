@@ -2,11 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../store';
 import { addNotification } from '../store/slices/uiSlice';
-import { fetchActionItems } from '../store/slices/actionSlice';
+import { fetchActionItems, updateActionItem, createRiskAssessment } from '../store/slices/actionSlice';
+import ActionModal from './ActionModal';
 
 const ActionCenter: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const [activeSection] = useState<'immediate' | 'risks'>('immediate');
+  // const [activeSection] = useState<'immediate' | 'risks'>('immediate'); // Reserved for future use
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    actionType: 'update' | 'clarify' | 'flag-risk' | null;
+    actionItem: any;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    actionType: null,
+    actionItem: null,
+    loading: false
+  });
   
   // Get action items from Redux store
   const { actionItems, loading } = useSelector((state: RootState) => state.actions);
@@ -18,17 +30,95 @@ const ActionCenter: React.FC = () => {
     }
   }, [dispatch, actionItems.length, loading]);
 
-  const handleAction = (action: string, itemId: string) => {
-    dispatch(
-      addNotification({
-        type: 'info',
-        message: `${action} action triggered for item ${itemId}`,
-        title: 'Action Triggered',
-      })
-    );
+  const openModal = (actionType: 'update' | 'clarify' | 'flag-risk', actionItem: any) => {
+    setModalState({
+      isOpen: true,
+      actionType,
+      actionItem,
+      loading: false
+    });
   };
 
-  // Helper functions for dynamic styling
+  const closeModal = () => {
+    setModalState({
+      isOpen: false,
+      actionType: null,
+      actionItem: null,
+      loading: false
+    });
+  };
+
+  const handleModalSubmit = async (formData: any) => {
+    setModalState(prev => ({ ...prev, loading: true }));
+    
+    try {
+      switch (modalState.actionType) {
+        case 'update':
+          await dispatch(updateActionItem({
+            id: modalState.actionItem.id,
+            updateData: {
+              status: formData.status,
+              priority: formData.priority,
+              description: formData.notes ? `${modalState.actionItem.description}\n\nUpdate: ${formData.notes}` : modalState.actionItem.description
+            }
+          })).unwrap();
+          
+          dispatch(addNotification({
+            type: 'success',
+            message: `Action item "${modalState.actionItem.title}" updated successfully`,
+            title: 'Update Complete'
+          }));
+          break;
+
+        case 'clarify':
+          // Create a new action item for clarification request
+          await dispatch(createRiskAssessment({
+            projectId: modalState.actionItem.projectId,
+            riskType: 'Clarification Request',
+            description: `Clarification needed for: ${modalState.actionItem.title}\n\nRequest: ${formData.notes}`,
+            impact: 'medium',
+            probability: 'high',
+            mitigation: 'Awaiting response from relevant team member',
+            status: 'open'
+          })).unwrap();
+          
+          dispatch(addNotification({
+            type: 'info',
+            message: `Clarification request sent for "${modalState.actionItem.title}"`,
+            title: 'Clarification Requested'
+          }));
+          break;
+
+        case 'flag-risk':
+          await dispatch(createRiskAssessment({
+            projectId: modalState.actionItem.projectId,
+            riskType: formData.riskType,
+            description: formData.notes,
+            impact: formData.impact,
+            probability: formData.probability,
+            mitigation: formData.mitigation,
+            status: 'open'
+          })).unwrap();
+          
+          dispatch(addNotification({
+            type: 'warning',
+            message: `Risk flagged for "${modalState.actionItem.title}"`,
+            title: 'Risk Flagged'
+          }));
+          break;
+      }
+      
+      closeModal();
+    } catch (error) {
+      dispatch(addNotification({
+        type: 'error',
+        message: `Failed to ${modalState.actionType} action item`,
+        title: 'Error'
+      }));
+      setModalState(prev => ({ ...prev, loading: false }));
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case 'high':
@@ -106,48 +196,53 @@ const ActionCenter: React.FC = () => {
   );
 
   return (
-    <div className="bg-[#0B1623] rounded-lg p-6 h-full">
-      <h2 className="text-xl font-semibold mb-4 text-white">Action Center</h2>
+    <div className="bg-[#0B1623] rounded-lg p-4 sm:p-6 h-full">
+      <h2 className="text-lg sm:text-xl font-semibold mb-4 text-white">Action Center</h2>
 
       {loading ? (
-        <div className="mb-6">
-          <h3 className="text-md font-small mb-3 text-white">
+        <div className="mb-4 sm:mb-6">
+          <h3 className="text-sm sm:text-md font-small mb-3 text-white">
             IMMEDIATE ACTION REQUIRED
           </h3>
           <div className="text-gray-400 text-center py-8">Loading action items...</div>
         </div>
       ) : actionItems && actionItems.length > 0 ? (
-        <div className="mb-6">
-          <h3 className="text-md font-small mb-3 text-white">
+        <div className="mb-4 sm:mb-6">
+          <h3 className="text-sm sm:text-md font-small mb-3 text-white">
             IMMEDIATE ACTION REQUIRED
           </h3>
           <div className="space-y-3">
             {actionItems.map((item) => (
-              <div key={item.id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-                <div className="flex items-start justify-between mb-3">
-                  <h4 className="font-semibold text-white text-base">
+              <div key={item.id} className="bg-gray-700 rounded-lg p-3 sm:p-4 border border-gray-600">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 space-y-2 sm:space-y-0">
+                  <h4 className="font-semibold text-white text-sm sm:text-base">
                     {item.title}
                   </h4>
-                  <div className="flex space-x-2">
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     <Pill label={item.priority} color={getPriorityColor(item.priority)} />
                     <Pill label={item.status} color={getStatusColor(item.status)} />
                   </div>
                 </div>
-                <p className="text-gray-300 text-sm mb-3 leading-relaxed">
+                <p className="text-gray-300 text-xs sm:text-sm mb-3 leading-relaxed">
                   {item.description}
                 </p>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                   <span className="text-xs text-gray-400">{getDueDateText(item.dueDate)}</span>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <ActionButton
                       label="Flag Risk"
                       color="bg-red-600 hover:bg-red-700"
-                      onClick={() => handleAction('Flag Risk', item.id)}
+                      onClick={() => openModal('flag-risk', item)}
+                    />
+                    <ActionButton
+                      label="Clarify"
+                      color="bg-yellow-600 hover:bg-yellow-700"
+                      onClick={() => openModal('clarify', item)}
                     />
                     <ActionButton
                       label="Update"
                       color="bg-blue-600 hover:bg-blue-700"
-                      onClick={() => handleAction('Update Status', item.id)}
+                      onClick={() => openModal('update', item)}
                     />
                   </div>
                 </div>
@@ -156,15 +251,26 @@ const ActionCenter: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="mb-6">
-          <h3 className="text-md font-small mb-3 text-white">
+        <div className="mb-4 sm:mb-6">
+          <h3 className="text-sm sm:text-md font-small mb-3 text-white">
             IMMEDIATE ACTION REQUIRED
           </h3>
           <div className="text-gray-400 text-center py-8">No action items found</div>
         </div>
       )}
 
-      {/* Additional sections can be added here if needed */}
+      
+      {/* Action Modal */}
+      {modalState.actionType && (
+        <ActionModal
+          isOpen={modalState.isOpen}
+          onClose={closeModal}
+          onSubmit={handleModalSubmit}
+          actionType={modalState.actionType}
+          actionItem={modalState.actionItem}
+          loading={modalState.loading}
+        />
+      )}
     </div>
   );
 };

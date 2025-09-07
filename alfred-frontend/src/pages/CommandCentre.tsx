@@ -74,8 +74,8 @@ const CommandCentre: React.FC = () => {
       <Header />
       <NotificationContainer />
       
-      <main className="px-4 py-6 pt-20">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <main className="px-2 sm:px-4 py-4 sm:py-6 pt-16 sm:pt-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <div className="lg:col-span-1">
             <ProjectSiteMap />
           </div>

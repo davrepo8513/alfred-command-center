@@ -41,7 +41,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(requestLogger);
 app.use(securityHeaders);
-app.use(rateLimiter(1000, 15 * 60 * 1000)); // 1,000 requests per 15 minutes for development
+app.use(rateLimiter(5000, 15 * 60 * 1000)); // 5,000 requests per 15 minutes for development
 
 
 // API Routes

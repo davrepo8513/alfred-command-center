@@ -100,6 +100,21 @@ export const createActionItem = createAsyncThunk(
   }
 );
 
+export const updateActionItem = createAsyncThunk(
+  'actions/updateActionItem',
+  async ({ id, updateData }: { id: string; updateData: Partial<ActionItem> }) => {
+    const response = await fetch(`http://localhost:3001/api/actions/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+    const data = await response.json();
+    return data.data;
+  }
+);
+
 export const updateActionStatus = createAsyncThunk(
   'actions/updateActionStatus',
   async ({ id, status }: { id: string; status: ActionItem['status'] }) => {
@@ -211,6 +226,16 @@ const actionSlice = createSlice({
       .addCase(createActionItem.fulfilled, (state, action) => {
         state.actionItems.unshift(action.payload);
         state.filteredActions.unshift(action.payload);
+      })
+      .addCase(updateActionItem.fulfilled, (state, action) => {
+        const index = state.actionItems.findIndex(a => a.id === action.payload.id);
+        if (index !== -1) {
+          state.actionItems[index] = action.payload;
+        }
+        const filteredIndex = state.filteredActions.findIndex(a => a.id === action.payload.id);
+        if (filteredIndex !== -1) {
+          state.filteredActions[filteredIndex] = action.payload;
+        }
       })
       .addCase(updateActionStatus.fulfilled, (state, action) => {
         const index = state.actionItems.findIndex(a => a.id === action.payload.id);

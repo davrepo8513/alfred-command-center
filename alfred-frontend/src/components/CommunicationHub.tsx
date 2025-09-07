@@ -22,10 +22,32 @@ const CommunicationHub: React.FC = () => {
   );
 
   const handleAction = (action: string, communicationId: string) => {
+    // Simulate different actions based on the action type
+    let message = '';
+    let type: 'success' | 'warning' | 'error' | 'info' = 'info';
+    
+    switch (action.toLowerCase()) {
+      case 'flag risk':
+        message = `Risk flagged for communication ${communicationId}. Risk assessment team has been notified.`;
+        type = 'warning';
+        break;
+      case 'clarify':
+        message = `Clarification request sent for communication ${communicationId}. Response expected within 24 hours.`;
+        type = 'info';
+        break;
+      case 'update':
+        message = `Status update requested for communication ${communicationId}. Team will provide update shortly.`;
+        type = 'success';
+        break;
+      default:
+        message = `${action} action triggered for communication ${communicationId}`;
+        type = 'info';
+    }
+    
     dispatch(
       addNotification({
-        type: 'info',
-        message: `${action} action triggered for communication ${communicationId}`,
+        type,
+        message,
         title: 'Action Triggered',
       }),
     );
@@ -44,21 +66,6 @@ const CommunicationHub: React.FC = () => {
         return 'border-green-400 text-green-400';
       default:
         return 'border-gray-400 text-gray-400';
-    }
-  };
-
-  const getSourceColor = (source: string) => {
-    switch (source.toLowerCase()) {
-      case 'ai':
-        return 'bg-blue-600';
-      case 'contractor':
-      case 'c':
-        return 'bg-green-600';
-      case 'authority':
-      case 'a':
-        return 'bg-purple-600';
-      default:
-        return 'bg-gray-600';
     }
   };
 
@@ -105,30 +112,32 @@ const CommunicationHub: React.FC = () => {
   );
 
   return (
-    <div className="bg-[#0B1623] rounded-xl p-6 h-full shadow-lg">
-      <h2 className="text-xl font-semibold mb-6 text-white">
+    <div className="bg-[#0B1623] rounded-xl p-4 sm:p-6 h-full shadow-lg">
+      <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-white">
         Communication Hub
       </h2>
-      <div className="flex mb-6 bg-[#111827] rounded-lg overflow-hidden">
+      <div className="flex mb-4 sm:mb-6 bg-[#111827] rounded-lg overflow-hidden">
         <button
           onClick={() => setActiveTab('communications')}
-          className={`w-1/2 px-6 py-2 text-sm font-medium transition-all ${
+          className={`w-1/2 px-3 sm:px-6 py-2 text-xs sm:text-sm font-medium transition-all ${
             activeTab === 'communications'
               ? 'bg-[#22d3ee] text-black'
               : 'text-gray-300 hover:text-white'
           }`}
         >
-          Communications
+          <span className="hidden sm:inline">Communications</span>
+          <span className="sm:hidden">Comm</span>
         </button>
         <button
           onClick={() => setActiveTab('ai-assistant')}
-          className={`w-1/2 px-6 py-2 text-sm font-medium transition-all ${
+          className={`w-1/2 px-3 sm:px-6 py-2 text-xs sm:text-sm font-medium transition-all ${
             activeTab === 'ai-assistant'
               ? 'bg-[#22d3ee] text-black'
               : 'text-gray-300 hover:text-white'
           }`}
         >
-          AI Assistant
+          <span className="hidden sm:inline">AI Assistant</span>
+          <span className="sm:hidden">AI</span>
         </button>
       </div>
 
@@ -140,32 +149,32 @@ const CommunicationHub: React.FC = () => {
             communications.map((item) => (
             <div
               key={item.id}
-              className="bg-[#1f2937] rounded-lg p-5 border border-gray-700 hover:border-gray-500 transition-colors"
+              className="bg-[#1f2937] rounded-lg p-3 sm:p-5 border border-gray-700 hover:border-gray-500 transition-colors"
             >
               {/* Header */}
-              <div className="flex items-start justify-between mb-3">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-3 space-y-2 sm:space-y-0">
                 <div className="flex items-center space-x-3">
                   <div>
-                    <h4 className="font-semibold text-white text-base">
+                    <h4 className="font-semibold text-white text-sm sm:text-base">
                       {item.title}
                     </h4>
                     <p className="text-xs text-gray-400 mt-1">{getTimeAgo(item.postedAt)}</p>
                   </div>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-1 sm:gap-2">
                   <Pill label={item.priority} color={getPriorityColor(item.priority)} />
                   <Pill label={item.source} color="border-blue-400 text-blue-400" />
                   {item.isAI && (
-                    <Pill label="AI Generated" color="border-purple-400 text-purple-400" />
+                    <Pill label="AI" color="border-purple-400 text-purple-400" />
                   )}
                 </div>
               </div>
 
-              <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+              <p className="text-gray-300 text-xs sm:text-sm mb-4 leading-relaxed">
                 {item.content}
               </p>
 
-              <div className="flex space-x-5 justify-center">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-center">
                 <ActionButton
                   label="Flag Risk"
                   color="bg-red-600 text-white hover:bg-red-700"
@@ -191,13 +200,15 @@ const CommunicationHub: React.FC = () => {
       )}
 
       {activeTab === 'ai-assistant' && (
-        <div className="text-center py-12">
-          <h3 className="text-xl font-semibold text-white mb-3">
-            AI Assistant
-          </h3>
-          <p className="text-gray-400 text-base mb-6 max-w-md mx-auto leading-relaxed">
-            Get AI-powered insights and recommendations for your projects.
-          </p>
+        <div className="space-y-3 sm:space-y-4">
+          <div className="text-center py-2 sm:py-4">
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-1 sm:mb-2">
+              AI Assistant
+            </h3>
+            <p className="text-gray-400 text-xs sm:text-sm">
+              AI-powered insights and recommendations
+            </p>
+          </div>
         </div>
       )}
     </div>
