@@ -27,11 +27,21 @@ const CommandCentre: React.FC = () => {
     // Set active tab
     dispatch(setActiveTab('command-centre'));
     
-    // Fetch initial data
-    dispatch(fetchProjects());
-    dispatch(fetchCommunications());
-    dispatch(fetchActionItems());
-    dispatch(fetchRiskAssessments());
+    // Fetch initial data only once
+    const fetchInitialData = async () => {
+      try {
+        await Promise.all([
+          dispatch(fetchProjects()),
+          dispatch(fetchCommunications()),
+          dispatch(fetchActionItems()),
+          dispatch(fetchRiskAssessments())
+        ]);
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      }
+    };
+    
+    fetchInitialData();
   }, [dispatch]);
 
   useEffect(() => {
@@ -64,7 +74,7 @@ const CommandCentre: React.FC = () => {
       <Header />
       <NotificationContainer />
       
-      <main className="container mx-auto px-4 py-6 pt-20">
+      <main className="px-4 py-6 pt-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1">
             <ProjectSiteMap />

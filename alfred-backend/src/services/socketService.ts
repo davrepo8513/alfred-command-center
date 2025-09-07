@@ -58,7 +58,7 @@ export class SocketService {
   static emitToAll(event: string, data: any): void {
     if (this.io) {
       this.io.emit(event, data);
-      console.log(`📡 Emitted '${event}' to all clients`);
+      console.log(`Emitted '${event}' to all clients`);
     }
   }
 
@@ -68,7 +68,7 @@ export class SocketService {
   static emitToProject(projectId: string, event: string, data: any): void {
     if (this.io) {
       this.io.to(`project-${projectId}`).emit(event, data);
-      console.log(`📡 Emitted '${event}' to project ${projectId}`);
+      console.log(`Emitted '${event}' to project ${projectId}`);
     }
   }
 
@@ -88,7 +88,7 @@ export class SocketService {
   static broadcastToOthers(socketId: string, event: string, data: any): void {
     if (this.io) {
       this.io.except(socketId).emit(event, data);
-      console.log(`📡 Broadcasted '${event}' to all clients except ${socketId}`);
+      console.log(`Broadcasted '${event}' to all clients except ${socketId}`);
     }
   }
 

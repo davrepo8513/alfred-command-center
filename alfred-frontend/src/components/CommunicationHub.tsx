@@ -10,10 +10,12 @@ const CommunicationHub: React.FC = () => {
   // Get communications from Redux store
   const { communications, loading } = useSelector((state: RootState) => state.communications);
   
-  // Fetch communications on component mount
+  // Fetch communications on component mount only if not already loaded
   useEffect(() => {
-    dispatch(fetchCommunications());
-  }, [dispatch]);
+    if (communications.length === 0 && !loading) {
+      dispatch(fetchCommunications());
+    }
+  }, [dispatch, communications.length, loading]);
 
   const [activeTab, setActiveTab] = useState<'communications' | 'ai-assistant'>(
     'communications',

@@ -19,6 +19,13 @@ export class ActionController {
       
       const actionItems = await ActionService.getAllActionItems(filters);
       
+      // Add caching headers to prevent excessive requests
+      res.set({
+        'Cache-Control': 'public, max-age=30', // Cache for 30 seconds
+        'ETag': `"actions-${Date.now()}"`,
+        'Last-Modified': new Date().toUTCString()
+      });
+      
       res.json({
         success: true,
         data: actionItems,

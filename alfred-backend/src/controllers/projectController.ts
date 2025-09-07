@@ -23,6 +23,13 @@ export class ProjectController {
       
       const projects = await ProjectService.getAllProjects(filters);
       
+      // Add caching headers to prevent excessive requests
+      res.set({
+        'Cache-Control': 'public, max-age=60', // Cache for 60 seconds (projects change less frequently)
+        'ETag': `"projects-${Date.now()}"`,
+        'Last-Modified': new Date().toUTCString()
+      });
+      
       res.json({
         success: true,
         data: projects,
@@ -334,13 +341,16 @@ export class ProjectController {
   /**
    * Get project schematic data for the modal
    */
-  static async getProjectSchematic(req: Request, res: Response): Promise<void> {
+  static async getProjectSchematic(req: Request, res: Response<ApiResponse<any>>): Promise<void> {
     try {
-      const { projectId } = req.params;
-      const project = await Project.findById(projectId);
+      const { id } = req.params;
+      const project = await Project.findById(id);
       
       if (!project) {
-        res.status(404).json({ message: 'Project not found' });
+        res.status(404).json({
+          success: false,
+          error: 'Project not found'
+        });
         return;
       }
 
@@ -400,9 +410,24 @@ export class ProjectController {
         workflowStages
       };
 
-      res.json(schematic);
+      // Add caching headers
+      res.set({
+        'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+        'ETag': `"schematic-${id}-${Date.now()}"`,
+        'Last-Modified': new Date().toUTCString()
+      });
+
+      res.json({
+        success: true,
+        data: schematic,
+        message: 'Project schematic retrieved successfully'
+      });
     } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch project schematic', error: String(error) });
+      console.error('Error in getProjectSchematic:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to retrieve project schematic'
+      });
     }
   }
 

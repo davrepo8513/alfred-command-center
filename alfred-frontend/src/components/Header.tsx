@@ -31,7 +31,7 @@ const Header: React.FC = () => {
 
   return (
     <header className="bg-[#0B1623] border-b border-gray-700 fixed w-full">
-      <div className="container mx-auto px-4">
+      <div className="px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-2 pr-5">

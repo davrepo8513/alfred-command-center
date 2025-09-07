@@ -144,19 +144,30 @@ export const securityHeaders = (req: Request, res: Response, next: NextFunction)
 };
 
 /**
- * Rate limiting middleware (basic implementation)
+ * Rate limiting middleware (enhanced implementation)
  */
 export const rateLimiter = (maxRequests: number = 100, windowMs: number = 15 * 60 * 1000) => {
-  const requests = new Map<string, { count: number; resetTime: number }>();
+  const requests = new Map<string, { count: number; resetTime: number; lastRequest: number }>();
   
   return (req: Request, res: Response, next: NextFunction) => {
     const ip = req.ip || 'unknown';
     const now = Date.now();
+    const endpoint = req.path;
     
-    const userRequests = requests.get(ip);
+    // Create a unique key for IP + endpoint combination
+    const key = `${ip}:${endpoint}`;
+    const userRequests = requests.get(key);
+    
+    // Check for rapid successive requests (prevent spam)
+    if (userRequests && now - userRequests.lastRequest < 100) { // 100ms minimum between requests
+      return res.status(429).json({
+        success: false,
+        error: 'Request too frequent, please slow down'
+      });
+    }
     
     if (!userRequests || now > userRequests.resetTime) {
-      requests.set(ip, { count: 1, resetTime: now + windowMs });
+      requests.set(key, { count: 1, resetTime: now + windowMs, lastRequest: now });
     } else if (userRequests.count >= maxRequests) {
       return res.status(429).json({
         success: false,
@@ -164,6 +175,16 @@ export const rateLimiter = (maxRequests: number = 100, windowMs: number = 15 * 6
       });
     } else {
       userRequests.count++;
+      userRequests.lastRequest = now;
+    }
+    
+    // Clean up old entries periodically
+    if (Math.random() < 0.01) {
+      for (const [k, v] of requests.entries()) {
+        if (now > v.resetTime) {
+          requests.delete(k);
+        }
+      }
     }
     
     next();
@@ -176,7 +197,7 @@ export const rateLimiter = (maxRequests: number = 100, windowMs: number = 15 * 6
 export const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type'],
   credentials: true,
   optionsSuccessStatus: 200
 };

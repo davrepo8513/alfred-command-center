@@ -44,7 +44,7 @@ export class ProjectService {
    */
   static async getProjectSchematic(projectId: string): Promise<ProjectSchematic> {
     const response = await apiClient.get(`/api/projects/${projectId}/schematic`);
-    return response.data;
+    return response.data.data; // Extract data from the API response wrapper
   }
 
   /**

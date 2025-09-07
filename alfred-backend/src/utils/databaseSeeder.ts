@@ -215,7 +215,7 @@ export const seedDatabase = async (): Promise<void> => {
 
     console.log(`Created ${riskAssessments.length} risk assessments`);
 
-    console.log('🎉 Database seeding completed successfully!');
+    console.log('Database seeding completed successfully!');
   } catch (error) {
     console.error('Database seeding failed:', error);
     throw error;

@@ -11,10 +11,12 @@ const ActionCenter: React.FC = () => {
   // Get action items from Redux store
   const { actionItems, loading } = useSelector((state: RootState) => state.actions);
   
-  // Fetch action items on component mount
+  // Fetch action items on component mount only if not already loaded
   useEffect(() => {
-    dispatch(fetchActionItems());
-  }, [dispatch]);
+    if (actionItems.length === 0 && !loading) {
+      dispatch(fetchActionItems());
+    }
+  }, [dispatch, actionItems.length, loading]);
 
   const handleAction = (action: string, itemId: string) => {
     dispatch(

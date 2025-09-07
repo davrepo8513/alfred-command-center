@@ -42,7 +42,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(requestLogger);
 app.use(securityHeaders);
-app.use(rateLimiter(10000, 15 * 60 * 1000)); // 10,000 requests per 15 minutes for development
+app.use(rateLimiter(1000, 15 * 60 * 1000)); // 1,000 requests per 15 minutes for development
 
 
 // API Routes
@@ -60,7 +60,6 @@ app.use(errorHandler);
 // Automatic real-time updates every 2 minutes (120,000 ms)
 const startRealTimeUpdates = () => {
   setInterval(() => {
-    console.log('🔄 Triggering automatic real-time updates...');
     
     // Simulate new communication
     SocketService.emitToAll('communication-new', {
@@ -102,7 +101,6 @@ const startRealTimeUpdates = () => {
       timestamp: new Date().toISOString()
     });
     
-    console.log('✅ Real-time updates sent to all connected clients');
   }, 120000); // 2 minutes
 };
 
@@ -111,27 +109,21 @@ const PORT = process.env.PORT || 3001;
 // Initialize database and start server
 const startServer = async () => {
   try {
-    // Connect to MongoDB
     await connectDatabase();
     
-    // Seed database with initial data
     await seedDatabase();
     
     // Start server
     server.listen(PORT, () => {
-      console.log(`🚀 Alfred Backend running on port ${PORT}`);
-      console.log(`📡 Socket.IO server ready for real-time updates`);
-      console.log(`🗄️ MongoDB database: avs`);
-      console.log(`🔒 Security headers enabled`);
-      console.log(`📊 Rate limiting: 100 requests per 15 minutes`);
+      console.log(`Alfred Backend running on port ${PORT}`);
       
       // Start automatic real-time updates
       startRealTimeUpdates();
-      console.log('⏰ Automatic updates scheduled every 2 minutes');
+      console.log('Automatic updates scheduled every 2 minutes');
     });
     
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
 };
