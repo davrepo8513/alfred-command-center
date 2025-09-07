@@ -6,13 +6,12 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { connectDatabase } from './config/database';
-import { seedDatabase } from './utils/databaseSeeder';
 import { SocketService } from './services/socketService';
 import { 
   errorHandler, 
   notFoundHandler, 
   requestLogger, 
-  securityHeaders, 
+  securityHeaders,
   rateLimiter
 } from './middleware/errorHandler';
 import { projectRoutes } from './routes/projectRoutes';
@@ -110,8 +109,6 @@ const PORT = process.env.PORT || 3001;
 const startServer = async () => {
   try {
     await connectDatabase();
-    
-    await seedDatabase();
     
     // Start server
     server.listen(PORT, () => {

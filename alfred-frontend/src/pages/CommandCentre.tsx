@@ -17,8 +17,8 @@ const CommandCentre: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { activeProject } = useSelector((state: RootState) => state.ui);
   const { projects, loading: projectsLoading } = useSelector((state: RootState) => state.projects);
-  const { communications, loading: communicationsLoading } = useSelector((state: RootState) => state.communications);
-  const { actionItems, loading: actionsLoading } = useSelector((state: RootState) => state.actions);
+  const { loading: communicationsLoading } = useSelector((state: RootState) => state.communications);
+  const { loading: actionsLoading } = useSelector((state: RootState) => state.actions);
 
   // Initialize socket connection
   useSocket();
