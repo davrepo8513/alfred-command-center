@@ -96,7 +96,6 @@ export class ProjectController {
         endDate
       });
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('project-new', newProject);
       
       res.status(201).json({
@@ -130,7 +129,6 @@ export class ProjectController {
         });
       }
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('project-update', updatedProject);
       
       res.json({
@@ -162,7 +160,6 @@ export class ProjectController {
         });
       }
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('project-deleted', { id });
       
       res.json({
@@ -218,7 +215,6 @@ export class ProjectController {
         });
       }
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('project-update', {
         id: updatedProject.id,
         progress: updatedProject.progress,

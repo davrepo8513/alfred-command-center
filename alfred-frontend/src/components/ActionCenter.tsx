@@ -7,7 +7,6 @@ import ActionModal from './ActionModal';
 
 const ActionCenter: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  // const [activeSection] = useState<'immediate' | 'risks'>('immediate'); // Reserved for future use
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     actionType: 'update' | 'clarify' | 'flag-risk' | null;

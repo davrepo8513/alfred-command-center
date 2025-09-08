@@ -19,8 +19,6 @@ router.post('/simulate/:location', asyncHandler(WeatherController.simulateWeathe
 router.get('/stats/overview', asyncHandler(WeatherController.getWeatherStatistics));
 router.get('/stats/extreme', asyncHandler(WeatherController.getExtremeWeatherConditions));
 
-// Socket testing
-router.post('/test-socket', asyncHandler(WeatherController.testSocket));
 
 export { router as weatherRoutes };
 

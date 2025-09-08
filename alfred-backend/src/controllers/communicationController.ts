@@ -76,7 +76,6 @@ export class CommunicationController {
     try {
       const newCommunication = await CommunicationService.createCommunication(req.body);
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('communication-new', newCommunication);
       
       res.status(201).json({
@@ -109,8 +108,7 @@ export class CommunicationController {
           error: 'Communication not found'
         });
       }
-      
-      // Emit real-time update via Socket.IO
+
       SocketService.emitToAll('communication-update', updatedCommunication);
       
       res.json({
@@ -142,7 +140,6 @@ export class CommunicationController {
         });
       }
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('communication-deleted', { id });
       
       res.json({
@@ -172,7 +169,6 @@ export class CommunicationController {
         content
       });
       
-      // Emit real-time update via Socket.IO
       SocketService.emitAIInsight(aiInsight);
       
       res.status(201).json({
@@ -185,46 +181,6 @@ export class CommunicationController {
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to generate AI insight'
-      });
-    }
-  }
-
-  /**
-   * Test socket events
-   */
-  static async testSocket(req: Request, res: Response<ApiResponse<any>>) {
-    try {
-      // Emit test events to all connected clients
-      SocketService.emitToAll('communication-new', {
-        id: `test-${Date.now()}`,
-        type: 'status-update',
-        title: 'Test Communication',
-        content: 'This is a test communication for socket testing.',
-        priority: 'normal',
-        source: 'system',
-        projectId: 'test-project',
-        tags: ['test', 'socket'],
-        postedAt: new Date().toISOString(),
-        isAI: false
-      });
-
-      SocketService.emitToAll('ai-insight', {
-        id: `insight-${Date.now()}`,
-        type: 'test-insight',
-        message: 'This is a test AI insight for socket testing.',
-        priority: 'high',
-        timestamp: new Date().toISOString()
-      });
-
-      res.json({
-        success: true,
-        message: 'Test socket events sent successfully'
-      });
-    } catch (error) {
-      console.error('Error in testSocket:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to send test socket events'
       });
     }
   }

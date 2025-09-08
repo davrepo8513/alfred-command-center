@@ -73,7 +73,6 @@ export class WeatherController {
       
       const result = await WeatherService.createOrUpdateWeather(location, weatherData);
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('weather-update', { location, data: result });
       
       res.json({
@@ -107,7 +106,6 @@ export class WeatherController {
         });
       }
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('weather-update', { location, data: updatedWeather });
       
       res.json({
@@ -138,8 +136,7 @@ export class WeatherController {
           error: 'Weather data not found for this location'
         });
       }
-      
-      // Emit real-time update via Socket.IO
+
       SocketService.emitToAll('weather-deleted', { location });
       
       res.json({
@@ -194,8 +191,7 @@ export class WeatherController {
           error: 'Weather data not found for this location'
         });
       }
-      
-      // Emit real-time update via Socket.IO
+
       SocketService.emitToAll('weather-update', { location, data: updatedWeather });
       
       res.json({
@@ -250,31 +246,6 @@ export class WeatherController {
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to retrieve extreme weather conditions'
-      });
-    }
-  }
-
-  /**
-   * Test socket connection for weather updates
-   */
-  static async testSocket(req: Request, res: Response<ApiResponse<any>>) {
-    try {
-      // Emit a test weather update via Socket.IO
-      SocketService.emitToAll('weather-test', {
-        message: 'Weather socket test successful',
-        timestamp: new Date().toISOString()
-      });
-      
-      res.json({
-        success: true,
-        data: { message: 'Weather socket test emitted successfully' },
-        message: 'Weather socket test completed'
-      });
-    } catch (error) {
-      console.error('Error in testSocket:', error);
-      res.status(500).json({
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to test weather socket'
       });
     }
   }

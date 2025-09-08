@@ -17,8 +17,5 @@ router.delete('/:id', asyncHandler(CommunicationController.deleteCommunication))
 router.post('/ai-insight', asyncHandler(CommunicationController.generateAIInsight));
 router.get('/ai-insights', asyncHandler(CommunicationController.getAIInsights));
 
-// Socket testing
-router.post('/test-socket', asyncHandler(CommunicationController.testSocket));
-
 export { router as communicationRoutes };
 

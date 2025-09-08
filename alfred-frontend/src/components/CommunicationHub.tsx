@@ -22,7 +22,6 @@ const CommunicationHub: React.FC = () => {
   );
 
   const handleAction = (action: string, communicationId: string) => {
-    // Simulate different actions based on the action type
     let message = '';
     let type: 'success' | 'warning' | 'error' | 'info' = 'info';
     

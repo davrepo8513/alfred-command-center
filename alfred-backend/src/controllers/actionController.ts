@@ -24,7 +24,7 @@ export class ActionController {
         'ETag': `"actions-${Date.now()}"`,
         'Last-Modified': new Date().toUTCString()
       });
-      
+
       res.json({
         success: true,
         data: actionItems,
@@ -75,7 +75,6 @@ export class ActionController {
     try {
       const newActionItem = await ActionService.createActionItem(req.body);
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('action-new', newActionItem);
       
       res.status(201).json({
@@ -109,7 +108,6 @@ export class ActionController {
         });
       }
       
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('action-update', updatedActionItem);
       
       res.json({
@@ -140,8 +138,6 @@ export class ActionController {
           error: 'Action item not found'
         });
       }
-      
-      // Emit real-time update via Socket.IO
       SocketService.emitToAll('action-deleted', { id });
       
       res.json({
@@ -174,8 +170,7 @@ export class ActionController {
           error: 'Action item not found'
         });
       }
-      
-      // Emit real-time update via Socket.IO
+
       SocketService.emitToAll('action-update', updatedActionItem);
       
       res.json({
